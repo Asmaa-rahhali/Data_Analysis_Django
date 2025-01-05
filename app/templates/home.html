@@ -1,0 +1,306 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse de données</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        body {
+            padding-top: 70px; /* Pour ne pas cacher le contenu sous la navbar */
+        }
+
+        section {
+            padding-top: 60px;
+            padding-bottom: 60px;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Analyse de Données</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="#import-section">📁 Importation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#preview-section">📄 Aperçu</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#statistics-section">📊 Statistiques</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#visualization-section">📈 Visualisation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'probabilites' %}">🎲 Probabilités</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <!-- 🚀 Section Importation -->
+        <div id="import-section" class="container mt-5 py-5">
+            <form method="POST" enctype="multipart/form-data" class="mb-4">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="file" class="form-label">Importer un fichier Excel :</label>
+                    <input type="file" name="file" id="file" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary">Téléverser</button>
+            </form>
+
+            {% if error_message %}
+            <div class="alert alert-warning text-center" role="alert">
+                <strong>{{ error_message }}</strong>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 🚀 Aperçu des Données -->
+        <div id="preview-section" class="container mt-1 py-5">
+            {% if data_preview %}
+            <h2 class="text-success">📄 Aperçu des données</h2>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            {% for column in columns %}
+                                <th>{{ column }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data_preview %}
+                            <tr>
+                                <td>{{ row.index }}</td>
+                                {% for column in columns %}
+                                    <td>{{ row|get_item:column }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+        <!-- Section pour les statistiques -->
+        {% if numeric_columns %}
+        <div id="statistics-section" class="container mt-1">
+            <h2 class="text-success">📊 Calcul des Statistiques</h2>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="statistics">
+                <div class="mb-3">
+                    <label for="selected_column" class="form-label">Choisissez une colonne numérique :</label>
+                    <select name="selected_column" id="selected_column" class="form-select">
+                        {% for column in numeric_columns %}
+                        <option value="{{ column }}" {% if column == selected_column %}selected{% endif %}>{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" name="moyenne" class="btn btn-primary mb-2">Calculer la Moyenne</button>
+                <button type="submit" name="mediane" class="btn btn-secondary mb-2">Calculer la Médiane</button>
+                <button type="submit" name="mode" class="btn btn-success mb-2">Calculer le Mode</button>
+                <button type="submit" name="variance" class="btn btn-warning mb-2">Calculer la Variance</button>
+                <button type="submit" name="ecart_type" class="btn btn-info mb-2">Calculer l'Écart Type</button>
+                <button type="submit" name="etendue" class="btn btn-danger mb-2">Calculer l'Étendue</button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if statistics %}
+        <div class="container mt-4">
+            <h4 class="mt-3">Résultats des Statistiques :</h4>
+            <ul class="list-group">
+                {% for key, value in statistics.items %}
+                <li class="list-group-item">{{ key|capfirst }} : {{ value }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Section pour la visualisation -->
+        {% if data_preview %}
+        <div id="visualization-section"  class="container mt-4">
+            <h2 class="text-success">📈 Visualisation</h2>
+            <h4 class="text-primary">Visualisations numériques</h4>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="visualization">
+                <div class="mb-3">
+                    <label for="selected_column" class="form-label">Choisissez une colonne numérique :</label>
+                    <select name="selected_column" id="selected_column" class="form-select">
+                        {% for column in numeric_columns %}
+                        <option value="{{ column }}" {% if column == selected_column %}selected{% endif %}>{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" name="generate_histogram" class="btn btn-info mb-2">Afficher l'Histogramme</button>
+                <button type="submit" name="generate_boxplot" class="btn btn-warning mb-2">Afficher le Boxplot</button>
+                <button type="submit" name="generate_kdeplot" class="btn btn-success mb-2">Afficher le KDE Plot</button>
+            </form>
+        </div>
+
+        <!-- Visualisations -->
+        {% if histogram %}
+        <div class="container mt-4">
+            <h4 class="text-success">Histogramme</h4>
+            <img src="data:image/png;base64,{{ histogram }}" class="img-fluid" alt="Histogramme">
+        </div>
+        {% endif %}
+        {% if boxplot %}
+        <div class="container mt-4">
+            <h4 class="text-success">Boxplot</h4>
+            <img src="data:image/png;base64,{{ boxplot }}" class="img-fluid" alt="Boxplot">
+        </div>
+        {% endif %}
+
+        {% if kdeplot %}
+        <div class="container mt-4">
+            <h4 class="text-success">KDE Plot</h4>
+            <img src="data:image/png;base64,{{ kdeplot }}" class="img-fluid" alt="KDE Plot">
+        </div>
+        {% endif %}
+
+
+        <!-- Formulaire pour Scatterplot et Heatmap -->
+<div class="container mt-4">
+    <h4 class="text-primary">Visualisations relationnelles</h4>
+    <form method="post">
+        {% csrf_token %}
+        <div class="row mb-3">
+            <!-- Colonne X -->
+            <div class="col-md-6">
+                <label for="column_x" class="form-label">Colonne X :</label>
+                <select name="column_x" id="column_x" class="form-select">
+                    {% for column in numeric_columns %}
+                    <option value="{{ column }}">{{ column }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- Colonne Y -->
+            <div class="col-md-6">
+                <label for="column_y" class="form-label">Colonne Y :</label>
+                <select name="column_y" id="column_y" class="form-select">
+                    {% for column in numeric_columns %}
+                    <option value="{{ column }}">{{ column }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <!-- Boutons -->
+        
+            <button type="submit" name="action" value="scatterplot" class="btn btn-primary">Afficher Scatterplot</button>
+            <button type="submit" name="action" value="heatmap_2cols" class="btn btn-danger">Afficher Heatmap</button>
+       
+    </form>
+</div>
+<div class="row mt-4">
+    <!-- Scatterplot -->
+    {% if scatterplot %}
+    <div class="col-md-6">
+        <h4 class="text-success">Scatterplot</h4>
+        <img src="data:image/png;base64,{{ scatterplot }}" class="img-fluid" alt="Scatter Plot">
+    </div>
+    {% endif %}
+    {% if heatmap_2cols %}
+    <div class="col-md-6">
+        <h4 class="text-success">Heatmap</h4>
+        <img src="data:image/png;base64,{{ heatmap_2cols }}" class="img-fluid" alt="Heatmap entre deux colonnes">
+    </div>
+    {% endif %}
+
+</div>
+
+        <!-- Formulaire pour Countplot -->
+        {% if data_preview %}
+        <div class="container mt-4">
+            <h4 class="text-primary">Visualisations catégoriques</h4>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="selected_categorical" class="form-label">Choisissez une colonne catégorique :</label>
+                    <select name="selected_categorical" id="selected_categorical" class="form-select">
+                        {% for column in categorical_columns %}
+                        <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                    <button type="submit" name="action" value="countplot" class="btn btn-success">Afficher le Countplot</button>
+                    <button type="submit" name="action" value="piechart" class="btn btn-info">Afficher le Pie Chart</button>
+            </form>
+        </div>
+        {% endif %}
+        {% if countplot %}
+        <div class="container mt-4">
+            <h4 class="text-success">Countplot</h4>
+            <img src="data:image/png;base64,{{ countplot }}" class="img-fluid" alt="Countplot">
+        </div>
+        {% endif %}
+
+        {% if piechart %}
+        <div class="container mt-4">
+            <h4 class="text-success">Pie Chart</h4>
+            <img src="data:image/png;base64,{{ piechart }}" class="img-fluid" alt="Pie Chart">
+        </div>
+        {% endif %}
+        <!-- Formulaire pour Barplot -->
+        {% if data_preview %}
+        <div class="container mt-4">
+            <h4 class="text-primary">Visualisations comparatives</h4>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="barplot">
+                <div class="mb-3">
+                    <label for="selected_categorical" class="form-label">Colonne catégorique :</label>
+                    <select name="selected_categorical" id="selected_categorical" class="form-select">
+                        {% for column in categorical_columns %}
+                        <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="selected_numeric" class="form-label">Colonne numérique :</label>
+                    <select name="selected_numeric" id="selected_numeric" class="form-select">
+                        {% for column in numeric_columns %}
+                        <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                    <button type="submit" name="action" value="barplot" class="btn btn-danger">Afficher le Barplot</button>
+                    <button type="submit" name="action" value="violinplot" class="btn btn-warning">Afficher le Violin Plot</button>
+            </form>
+        </div>
+        {% endif %}
+        {% if barplot %}
+        <div class="container mt-4">
+            <h4 class="text-success">Barplot</h4>
+            <img src="data:image/png;base64,{{ barplot }}" class="img-fluid" alt="Barplot">
+        </div>
+        {% endif %}
+        {% if violinplot %}
+        <div class="container mt-4">
+            <h4 class="text-success">Violin Plot</h4>
+            <img src="data:image/png;base64,{{ violinplot }}" class="img-fluid" alt="Violin Plot">
+        </div>
+        {% endif %}
+        {% endif %}
+        
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+<footer class="text-center mt-4" style="margin-bottom: 50px;"></footer>
+
+</html>

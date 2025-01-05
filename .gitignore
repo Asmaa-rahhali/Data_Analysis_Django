@@ -1,0 +1,31 @@
+# Ignorer l'environnement virtuel
+env/
+*.env
+
+# Ignorer les bases de données SQLite
+*.sqlite3
+
+# Ignorer les fichiers Excel
+*.xlsx
+*.xls
+
+# Ignorer les fichiers Python compilés
+__pycache__/
+*.py[cod]
+
+# Ignorer les fichiers logs et temporaires
+*.log
+*.tmp
+
+# Ignorer les fichiers générés par le système
+.DS_Store
+Thumbs.db
+
+# Ignorer les fichiers de configuration spécifiques à l'IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

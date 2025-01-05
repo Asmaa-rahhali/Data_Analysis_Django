@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lois de probabilité</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        body {
+            padding-top: 70px; /* Pour ne pas cacher le contenu sous la navbar */
+        }
+
+        section {
+            padding-top: 60px;
+            padding-bottom: 60px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'home' %}">Analyse de Données</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">🏠 Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#proba-discretes">🎲 Probabilités Discrètes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#proba-continues">📈 Probabilités Continues</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+    <div class="container mt-5 py-5" id="proba-discretes">
+      <h1 class="text-center text-primary mb-4">Lois de Probabilités Discrètes</h1>
+      <h3 class="text-success mb-4">Loi de Bernoulli</h3>
+  
+        <p class="mb-4">Calculez des probabilités pour un lancer de dé basé sur la Loi de Bernoulli. Sélectionnez vos conditions ci-dessous.</p>
+
+        <!-- Formulaire -->
+        <form method="post" action="{% url 'probabilites' %}">
+            {% csrf_token %}
+            <input type="hidden" name="calculation_type" value="bernoulli">
+            <!-- Condition -->
+            <div class="mb-3">
+                <label for="condition_type" class="form-label">Condition :</label>
+                <select name="condition_type" id="condition_type" class="form-select" onchange="updateValueOptions()">
+                    <option value="equals">X =</option>
+                    <option value="greater">X ></option>
+                    <option value="less">X <</option>
+                    <option value="even">X est pair</option>
+                    <option value="odd">X est impair</option>
+                </select>
+            </div>
+
+            <!-- Valeur -->
+            <div id="value_input" class="mb-3">
+              <label for="condition_value" class="form-label">Valeur :</label>
+              <select name="condition_value" id="condition_value" class="form-select">
+                  <!-- Options seront générées dynamiquement par JS -->
+              </select>
+          </div>
+
+            <button type="submit" class="btn btn-primary">Calculer</button>
+        </form>
+
+        <!-- Résultat -->
+        {% if result_bernoulli %}
+        <div class="alert alert-info mt-4">
+            <strong>Résultat :</strong> {{ result_bernoulli }}
+        </div>
+        {% endif %}
+
+        <!-- Graphe -->
+        {% if graph_bernoulli %}
+        <div class="mt-4">
+            <img src="data:image/png;base64,{{ graph_bernoulli }}" class="img-fluid" alt="Graphique Bernoulli">
+        </div>
+        {% endif %}
+        <h3 class="text-success mb-4 mt-4">Loi Binomiale</h3>
+        <p>Un dé est lancé plusieurs fois. Calculez la probabilité d'obtenir un résultat un certain nombre de fois.</p>
+
+        <!-- Formulaire -->
+        <form method="post" action="{% url 'probabilites' %}" class="mb-4">
+            {% csrf_token %}
+            <input type="hidden" name="calculation_type" value="binomial">
+            <div class="mb-3">
+                <label for="n" class="form-label">Nombre de lancers :</label>
+                <input type="number" name="n" id="n" class="form-control" value="12" required>
+            </div>
+    
+            <div class="mb-3">
+                <label for="valeur" class="form-label">Face du dé recherchée :</label>
+                <select name="valeur" id="valeur" class="form-select">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+            </div>
+    
+            <div class="mb-3">
+                <label for="x" class="form-label">Nombre de succès souhaités :</label>
+                <input type="number" name="x" id="x" class="form-control" value="5" required>
+            </div>
+    
+            <button type="submit" class="btn btn-primary">Calculer</button>
+        </form>
+    
+        <!-- Résultat -->
+        {% if result_binomial %}
+        <div class="alert alert-info">
+            <strong>Résultat :</strong> {{ result_binomial }}
+        </div>
+        {% endif %}
+    
+        <!-- Graphe -->
+        {% if chart_binomial %}
+        <div class="container mt-4">
+            <img src="data:image/png;base64,{{ chart_binomial }}" class="img-fluid" alt="Distribution Binomiale">
+        </div>
+        {% endif %}
+        <h3 class="text-success mb-4 mt-4">Loi Uniforme Discontinue</h3>
+        <p class="mb-4">Dans une loterie, chaque ticket a une probabilité égale d'être tiré au sort. Cette distribution est appelée loi uniforme discontinue, car elle attribue la même probabilité à un nombre fini de résultats possibles.</p>
+        <!-- Formulaire pour la loterie -->
+        <form method="post" action="{% url 'probabilites' %}">
+          {% csrf_token %}
+          <input type="hidden" name="calculation_type" value="loterie">
+  <!-- Nombre total de tickets -->
+<div class="mb-3">
+  <label for="n" class="form-label">Nombre total de tickets :</label>
+  <select name="n" id="n" class="form-select" onchange="updateSelectionOptions(this.value, 'selection')">
+      {% for i in tickets_range %}
+          <option value="{{ i }}">{{ i }}</option>
+      {% endfor %}
+  </select>
+</div>
+
+<!-- Ticket sélectionné -->
+<div class="mb-3">
+  <label for="selection" class="form-label">Ticket sélectionné :</label>
+  <select name="selection" id="selection" class="form-select">
+      <!-- Options mises à jour dynamiquement -->
+      <option value="1" selected>1</option>
+  </select>
+</div>
+
+
+      
+          <!-- Bouton Calculer -->
+          <button type="submit" class="btn btn-primary">Calculer</button>
+      </form>
+      
+
+  
+      <!-- Résultat -->
+      {% if result_loterie %}
+      <div class="alert alert-info mt-4">
+          <strong>Résultat :</strong> {{ result_loterie }}
+      </div>
+      {% endif %}
+  
+      <!-- Graphique -->
+      {% if chart_loterie %}
+      <div class="mt-4">
+          <img src="data:image/png;base64,{{ chart_loterie }}" class="img-fluid" alt="Graphique Loterie">
+      </div>
+      {% endif %}
+      <h3 class="text-success mb-4 mt-4">Loi de Poisson</h3>
+<p>
+    Un centre d'appels reçoit en moyenne 7 appels toutes les 2 heures. 
+    Utilisez ce formulaire pour calculer la probabilité d'obtenir un nombre spécifique d'appels 
+    sur une durée définie.
+</p>
+
+<!-- Formulaire pour Poisson -->
+<form method="post" action="{% url 'probabilites' %}">
+    {% csrf_token %}
+    <input type="hidden" name="calculation_type" value="poisson">
+
+    <!-- Nombre d'appels souhaités -->
+    <div class="mb-3">
+        <label for="x" class="form-label">Nombre d'appels souhaités :</label>
+        <input type="number" name="x" id="x" class="form-control" value="5" required>
+    </div>
+
+    <!-- Durée d'observation en heures -->
+    <div class="mb-3">
+        <label for="heures" class="form-label">Durée d'observation (heures) :</label>
+        <input type="number" name="heures" id="heures" class="form-control" value="1" required>
+    </div>
+
+    <!-- Bouton -->
+    <button type="submit" class="btn btn-primary">Calculer</button>
+</form>
+
+<!-- Résultat -->
+{% if result_poisson %}
+<div class="alert alert-info mt-4">
+    <strong>Résultat :</strong> {{ result_poisson }}
+</div>
+{% endif %}
+
+<!-- Graphe -->
+{% if chart_poisson %}
+<div class="mt-4">
+    <img src="data:image/png;base64,{{ chart_poisson }}" class="img-fluid" alt="Graphique Poisson">
+</div>
+{% endif %}
+    </div>
+    <div class="container py-5" id="proba-continues">
+      <h1 class="text-center text-primary mb-4">Lois de Probabilités Continues</h1>
+      <h3 class="text-success mb-4 mt-4">Loi Uniforme Continue</h3>
+<p>
+    La durée de vie d'une ampoule électrique suit une loi uniforme continue entre 
+    <strong>{{ a }}</strong> ans et <strong>{{ b }}</strong> ans. 
+    Utilisez ce formulaire pour calculer les probabilités spécifiques.
+</p>
+
+<!-- Formulaire -->
+<form method="post" action="{% url 'probabilites' %}">
+  {% csrf_token %}
+  <input type="hidden" name="calculation_type" value="uniforme_continue">
+
+  <!-- Condition -->
+  <div class="mb-3">
+      <label for="condition" class="form-label">Condition :</label>
+      <select name="condition" id="condition" class="form-select" required>
+          <option value="=">X =</option>
+          <option value=">">X ></option>
+          <option value="<">X <</option>
+      </select>
+  </div>
+
+  <!-- Valeur choisie -->
+  <div class="mb-3">
+      <label for="x" class="form-label">Valeur (x) :</label>
+      <input type="number" step="0.5" name="x" id="x" class="form-control" required min="2" max="5">
+  </div>
+
+  <!-- Bouton -->
+  <button type="submit" class="btn btn-primary">Calculer</button>
+</form>
+
+<!-- Résultat -->
+{% if result_uniforme %}
+<div class="alert alert-info mt-4">
+  <strong>Résultat :</strong> {{ result_uniforme }}
+</div>
+{% endif %}
+
+<!-- Graphe -->
+{% if chart_uniforme %}
+<div class="mt-4">
+  <img src="data:image/png;base64,{{ chart_uniforme }}" class="img-fluid" alt="Graphique Uniforme Continue">
+</div>
+{% endif %}
+<h3 class="text-success mb-4 mt-4">Loi Exponentielle</h3>
+<p>
+    Un composant électronique suit une loi exponentielle pour sa durée de vie avec une moyenne de <strong>3 heures</strong>. 
+    Utilisez ce formulaire pour calculer la probabilité qu'il fonctionne pendant une certaine durée.</p>
+
+<!-- Formulaire pour la loi exponentielle -->
+<form method="post" action="{% url 'probabilites' %}">
+    {% csrf_token %}
+    <input type="hidden" name="calculation_type" value="exponentielle">
+<!-- Condition -->
+<div class="mb-3">
+  <label for="condition" class="form-label">Condition :</label>
+  <select name="condition" id="condition" class="form-select">
+      <option value="greater">P(X > x)</option>
+      <option value="less">P(X < x)</option>
+  </select>
+</div>
+    <!-- Durée souhaitée -->
+    <div class="mb-3">
+        <label for="x" class="form-label">Durée (x) en heures :</label>
+        <input type="number" step="0.5" name="x" id="x" class="form-control" value="2" required min="0">
+    </div>
+
+    
+
+    <!-- Bouton -->
+    <button type="submit" class="btn btn-primary">Calculer</button>
+</form>
+
+<!-- Résultat -->
+{% if result_exponentielle %}
+<div class="alert alert-info mt-4">
+    <strong>Résultat :</strong> {{ result_exponentielle }}
+</div>
+{% endif %}
+
+<!-- Graphe -->
+{% if chart_exponentielle %}
+<div class="mt-4">
+    <img src="data:image/png;base64,{{ chart_exponentielle }}" class="img-fluid" alt="Graphique Exponentielle">
+</div>
+{% endif %}
+<h3 class="text-success mt-4 mb-4">Loi Normale Gaussienne</h3>
+    <p class="mb-4">Calculez des probabilités basées sur la loi normale avec une moyenne de 75 et un écart-type de 7.</p>
+
+    <!-- Formulaire -->
+    <form method="post" action="{% url 'probabilites' %}">
+        {% csrf_token %}
+        <input type="hidden" name="calculation_type" value="normale">
+
+        <div class="mb-3">
+            <label for="interval" class="form-label">Intervalle :</label>
+            <select name="interval" id="interval" class="form-select">
+                <option value="68_82">68 < X < 82</option>
+                <option value="61_89">61 < X < 89</option>
+                <option value="54_75">54 < X < 75</option>
+                <option value="96">X > 96</option>
+                <option value="54">X < 54</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Calculer</button>
+    </form>
+
+    <!-- Résultat -->
+    {% if result_normale %}
+    <div class="alert alert-info mt-4">
+        <strong>Résultat :</strong> {{ result_normale }}%
+    </div>
+    {% endif %}
+
+    <!-- Graphe -->
+    {% if graph_normale %}
+    <div class="mt-4">
+        <img src="data:image/png;base64,{{ graph_normale }}" class="img-fluid" alt="Graphique Loi Normale">
+    </div>
+    {% endif %}
+    </div>
+    
+    <script>
+      function updateValueOptions() {
+          const conditionType = document.getElementById("condition_type").value; // Condition sélectionnée
+          const valueInputDiv = document.getElementById("value_input");
+          const valueInput = document.getElementById("condition_value"); // Sélecteur de valeurs
+          
+          valueInputDiv.style.display = "block"; // Réafficher le div s'il a été caché précédemment
+          // Vider les options existantes
+          valueInput.innerHTML = "";
+  
+          // Déterminer les options en fonction de la condition
+          let values = [];
+          if (conditionType === "equals") {
+              values = [1, 2, 3, 4, 5, 6]; // X = [1-6]
+          } else if (conditionType === "greater") {
+              values = [1, 2, 3, 4, 5]; // X > [1-5]
+          } else if (conditionType === "less") {
+              values = [2, 3, 4, 5, 6]; // X < [2-6]
+          } else if (conditionType === "even" || conditionType === "odd") {
+              // Cache la sélection pour pair/impair
+              valueInputDiv.style.display = "none";
+              return; 
+          }
+  
+          // Ajouter les options dynamiquement
+          values.forEach(val => {
+              let option = document.createElement("option");
+              option.value = val;
+              option.textContent = val;
+              valueInput.appendChild(option);
+          });
+      }
+  
+      // Initialiser au chargement
+      updateValueOptions();
+  </script>
+  <script>
+    function updateSelectionOptions(n, selectionId) {
+    const selectionInput = document.getElementById(selectionId); // ID passé en argument
+
+    // Vider les options existantes
+    selectionInput.innerHTML = "";
+
+    // Générer dynamiquement les options (1 à n)
+    for (let i = 1; i <= n; i++) {
+        let option = document.createElement("option");
+        option.value = i;
+        option.textContent = i;
+        if (i === 1) {
+            option.selected = true; // Définit la sélection initiale
+        }
+        selectionInput.appendChild(option);
+    }
+}
+
+  </script>
+  <script>
+    function toggleInputs() {
+    const condition = document.getElementById("condition").value;
+    const exactInput = document.getElementById("exact_input");
+    const intervalInput = document.getElementById("interval_input");
+
+    if (condition === "equals" || condition === "greater") {
+        exactInput.style.display = "block";
+        intervalInput.style.display = "none";
+    } else if (condition === "between") {
+        exactInput.style.display = "none";
+        intervalInput.style.display = "block";
+    }
+}
+  </script>
+  <script>
+    function toggleSecondInput() {
+        const condition = document.getElementById("condition").value;
+        const x2Div = document.getElementById("x2_div");
+        if (condition === "intervalle") {
+            x2Div.style.display = "block";
+        } else {
+            x2Div.style.display = "none";
+        }
+    }
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
