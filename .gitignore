@@ -5,9 +5,6 @@ env/
 # Ignorer les bases de données SQLite
 *.sqlite3
 
-# Ignorer les fichiers Excel
-*.xlsx
-*.xls
 
 # Ignorer les fichiers Python compilés
 __pycache__/
