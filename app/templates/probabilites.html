@@ -14,7 +14,7 @@
         }
 
         body {
-            padding-top: 70px; /* Pour ne pas cacher le contenu sous la navbar */
+            padding-top: 70px; 
         }
 
         section {
@@ -45,11 +45,9 @@
   
         <p class="mb-4">Calculez des probabilités pour un lancer de dé basé sur la Loi de Bernoulli. Sélectionnez vos conditions ci-dessous.</p>
 
-        <!-- Formulaire -->
         <form method="post" action="{% url 'probabilites' %}">
             {% csrf_token %}
             <input type="hidden" name="calculation_type" value="bernoulli">
-            <!-- Condition -->
             <div class="mb-3">
                 <label for="condition_type" class="form-label">Condition :</label>
                 <select name="condition_type" id="condition_type" class="form-select" onchange="updateValueOptions()">
@@ -61,25 +59,21 @@
                 </select>
             </div>
 
-            <!-- Valeur -->
             <div id="value_input" class="mb-3">
               <label for="condition_value" class="form-label">Valeur :</label>
               <select name="condition_value" id="condition_value" class="form-select">
-                  <!-- Options seront générées dynamiquement par JS -->
               </select>
           </div>
 
             <button type="submit" class="btn btn-primary">Calculer</button>
         </form>
 
-        <!-- Résultat -->
         {% if result_bernoulli %}
         <div class="alert alert-info mt-4">
             <strong>Résultat :</strong> {{ result_bernoulli }}
         </div>
         {% endif %}
 
-        <!-- Graphe -->
         {% if graph_bernoulli %}
         <div class="mt-4">
             <img src="data:image/png;base64,{{ graph_bernoulli }}" class="img-fluid" alt="Graphique Bernoulli">
@@ -88,7 +82,6 @@
         <h3 class="text-success mb-4 mt-4">Loi Binomiale</h3>
         <p>Un dé est lancé plusieurs fois. Calculez la probabilité d'obtenir un résultat un certain nombre de fois.</p>
 
-        <!-- Formulaire -->
         <form method="post" action="{% url 'probabilites' %}" class="mb-4">
             {% csrf_token %}
             <input type="hidden" name="calculation_type" value="binomial">
@@ -117,14 +110,12 @@
             <button type="submit" class="btn btn-primary">Calculer</button>
         </form>
     
-        <!-- Résultat -->
         {% if result_binomial %}
         <div class="alert alert-info">
             <strong>Résultat :</strong> {{ result_binomial }}
         </div>
         {% endif %}
     
-        <!-- Graphe -->
         {% if chart_binomial %}
         <div class="container mt-4">
             <img src="data:image/png;base64,{{ chart_binomial }}" class="img-fluid" alt="Distribution Binomiale">
@@ -132,11 +123,9 @@
         {% endif %}
         <h3 class="text-success mb-4 mt-4">Loi Uniforme Discontinue</h3>
         <p class="mb-4">Dans une loterie, chaque ticket a une probabilité égale d'être tiré au sort. Cette distribution est appelée loi uniforme discontinue, car elle attribue la même probabilité à un nombre fini de résultats possibles.</p>
-        <!-- Formulaire pour la loterie -->
         <form method="post" action="{% url 'probabilites' %}">
           {% csrf_token %}
           <input type="hidden" name="calculation_type" value="loterie">
-  <!-- Nombre total de tickets -->
 <div class="mb-3">
   <label for="n" class="form-label">Nombre total de tickets :</label>
   <select name="n" id="n" class="form-select" onchange="updateSelectionOptions(this.value, 'selection')">
@@ -146,31 +135,26 @@
   </select>
 </div>
 
-<!-- Ticket sélectionné -->
 <div class="mb-3">
   <label for="selection" class="form-label">Ticket sélectionné :</label>
   <select name="selection" id="selection" class="form-select">
-      <!-- Options mises à jour dynamiquement -->
       <option value="1" selected>1</option>
   </select>
 </div>
 
 
       
-          <!-- Bouton Calculer -->
           <button type="submit" class="btn btn-primary">Calculer</button>
       </form>
       
 
   
-      <!-- Résultat -->
       {% if result_loterie %}
       <div class="alert alert-info mt-4">
           <strong>Résultat :</strong> {{ result_loterie }}
       </div>
       {% endif %}
   
-      <!-- Graphique -->
       {% if chart_loterie %}
       <div class="mt-4">
           <img src="data:image/png;base64,{{ chart_loterie }}" class="img-fluid" alt="Graphique Loterie">
@@ -183,35 +167,29 @@
     sur une durée définie.
 </p>
 
-<!-- Formulaire pour Poisson -->
 <form method="post" action="{% url 'probabilites' %}">
     {% csrf_token %}
     <input type="hidden" name="calculation_type" value="poisson">
 
-    <!-- Nombre d'appels souhaités -->
     <div class="mb-3">
         <label for="x" class="form-label">Nombre d'appels souhaités :</label>
         <input type="number" name="x" id="x" class="form-control" value="5" required>
     </div>
 
-    <!-- Durée d'observation en heures -->
     <div class="mb-3">
         <label for="heures" class="form-label">Durée d'observation (heures) :</label>
         <input type="number" name="heures" id="heures" class="form-control" value="1" required>
     </div>
 
-    <!-- Bouton -->
     <button type="submit" class="btn btn-primary">Calculer</button>
 </form>
 
-<!-- Résultat -->
 {% if result_poisson %}
 <div class="alert alert-info mt-4">
     <strong>Résultat :</strong> {{ result_poisson }}
 </div>
 {% endif %}
 
-<!-- Graphe -->
 {% if chart_poisson %}
 <div class="mt-4">
     <img src="data:image/png;base64,{{ chart_poisson }}" class="img-fluid" alt="Graphique Poisson">
@@ -227,12 +205,10 @@
     Utilisez ce formulaire pour calculer les probabilités spécifiques.
 </p>
 
-<!-- Formulaire -->
 <form method="post" action="{% url 'probabilites' %}">
   {% csrf_token %}
   <input type="hidden" name="calculation_type" value="uniforme_continue">
 
-  <!-- Condition -->
   <div class="mb-3">
       <label for="condition" class="form-label">Condition :</label>
       <select name="condition" id="condition" class="form-select" required>
@@ -242,24 +218,20 @@
       </select>
   </div>
 
-  <!-- Valeur choisie -->
   <div class="mb-3">
       <label for="x" class="form-label">Valeur (x) :</label>
       <input type="number" step="0.5" name="x" id="x" class="form-control" required min="2" max="5">
   </div>
 
-  <!-- Bouton -->
   <button type="submit" class="btn btn-primary">Calculer</button>
 </form>
 
-<!-- Résultat -->
 {% if result_uniforme %}
 <div class="alert alert-info mt-4">
   <strong>Résultat :</strong> {{ result_uniforme }}
 </div>
 {% endif %}
 
-<!-- Graphe -->
 {% if chart_uniforme %}
 <div class="mt-4">
   <img src="data:image/png;base64,{{ chart_uniforme }}" class="img-fluid" alt="Graphique Uniforme Continue">
@@ -270,11 +242,9 @@
     Un composant électronique suit une loi exponentielle pour sa durée de vie avec une moyenne de <strong>3 heures</strong>. 
     Utilisez ce formulaire pour calculer la probabilité qu'il fonctionne pendant une certaine durée.</p>
 
-<!-- Formulaire pour la loi exponentielle -->
 <form method="post" action="{% url 'probabilites' %}">
     {% csrf_token %}
     <input type="hidden" name="calculation_type" value="exponentielle">
-<!-- Condition -->
 <div class="mb-3">
   <label for="condition" class="form-label">Condition :</label>
   <select name="condition" id="condition" class="form-select">
@@ -282,26 +252,20 @@
       <option value="less">P(X < x)</option>
   </select>
 </div>
-    <!-- Durée souhaitée -->
     <div class="mb-3">
         <label for="x" class="form-label">Durée (x) en heures :</label>
         <input type="number" step="0.5" name="x" id="x" class="form-control" value="2" required min="0">
     </div>
 
-    
-
-    <!-- Bouton -->
-    <button type="submit" class="btn btn-primary">Calculer</button>
+        <button type="submit" class="btn btn-primary">Calculer</button>
 </form>
 
-<!-- Résultat -->
 {% if result_exponentielle %}
 <div class="alert alert-info mt-4">
     <strong>Résultat :</strong> {{ result_exponentielle }}
 </div>
 {% endif %}
 
-<!-- Graphe -->
 {% if chart_exponentielle %}
 <div class="mt-4">
     <img src="data:image/png;base64,{{ chart_exponentielle }}" class="img-fluid" alt="Graphique Exponentielle">
@@ -310,7 +274,6 @@
 <h3 class="text-success mt-4 mb-4">Loi Normale Gaussienne</h3>
     <p class="mb-4">Calculez des probabilités basées sur la loi normale avec une moyenne de 75 et un écart-type de 7.</p>
 
-    <!-- Formulaire -->
     <form method="post" action="{% url 'probabilites' %}">
         {% csrf_token %}
         <input type="hidden" name="calculation_type" value="normale">
@@ -329,14 +292,12 @@
         <button type="submit" class="btn btn-primary">Calculer</button>
     </form>
 
-    <!-- Résultat -->
     {% if result_normale %}
     <div class="alert alert-info mt-4">
         <strong>Résultat :</strong> {{ result_normale }}%
     </div>
     {% endif %}
 
-    <!-- Graphe -->
     {% if graph_normale %}
     <div class="mt-4">
         <img src="data:image/png;base64,{{ graph_normale }}" class="img-fluid" alt="Graphique Loi Normale">

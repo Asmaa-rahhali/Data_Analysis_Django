@@ -17,7 +17,7 @@ import base64
 def home(request):
     data = None
     numeric_columns = []
-    categorical_columns = []  # Ajout pour catégoriser les colonnes
+    categorical_columns = []  
     statistics = None
     selected_column = None
     histogram = None
@@ -32,28 +32,28 @@ def home(request):
     kdeplot = None
     heatmap_2cols = None
     if request.method == "POST":
-        action = request.POST.get("action")  # Identifier l'action demandée
+        action = request.POST.get("action")  
         if "file" in request.FILES:
-            # Gestion de l'importation du fichier
+           
             file = request.FILES["file"]
             try:
                 data = pd.read_excel(file)
-                request.session['data'] = data.to_json(orient="split")  # Sauvegarder dans la session
+                request.session['data'] = data.to_json(orient="split")  
             except Exception as e:
                 error_message = f"Erreur lors de l'importation : {e}"
                 data = None
         else:
-            # Récupération des données de la session
+            
             data_json = request.session.get('data')
             if data_json:
                 data = pd.read_json(data_json, orient="split")
             else:
-                data = None  # Aucune donnée disponible
+                data = None  
 
             if action == "statistics":
                 selected_column = request.POST.get("selected_column")
                 if selected_column and selected_column in data.columns:
-                    # Calcul des statistiques
+                   
                     if "moyenne" in request.POST:
                         statistics = {"Moyenne": "{:.3f}".format(data[selected_column].mean())}
                     elif "mediane" in request.POST:
@@ -72,7 +72,6 @@ def home(request):
             elif action == "visualization":
                 selected_column = request.POST.get("selected_column")
                 if selected_column and selected_column in data.columns:
-                    # Générer un histogramme
                     if "generate_histogram" in request.POST:
                         fig, ax = plt.subplots(figsize=(8, 5))
                         ax.hist(data[selected_column], bins=10, color="skyblue", edgecolor="black")
@@ -85,7 +84,6 @@ def home(request):
                         histogram = base64.b64encode(buf.read()).decode("utf-8")
                         buf.close()
 
-                    # Générer une heatmap
                     if "generate_heatmap" in request.POST:
                         corr_data = data.select_dtypes(include=["number"]).corr()
                         fig, ax = plt.subplots(figsize=(8, 6))
@@ -97,7 +95,6 @@ def home(request):
                         heatmap = base64.b64encode(buf.read()).decode("utf-8")
                         buf.close()
 
-                    # Générer un boxplot
                     if "generate_boxplot" in request.POST:
                         fig, ax = plt.subplots(figsize=(8, 6))
                         sns.boxplot(data=data, y=selected_column, ax=ax)
@@ -118,7 +115,7 @@ def home(request):
                                 buf.seek(0)
                                 kdeplot = base64.b64encode(buf.read()).decode("utf-8")
                                 buf.close()
-                                plt.close(fig)  # Assurez-vous de fermer la figure
+                                plt.close(fig)  
                             else:
                                 error_message = f"La colonne '{selected_column}' ne peut pas être utilisée pour un KDE Plot."
                         except Exception as e:
@@ -128,7 +125,6 @@ def home(request):
                 column_x = request.POST.get("column_x")
                 column_y = request.POST.get("column_y")
                 if column_x and column_y and column_x in data.columns and column_y in data.columns:
-                    # Générer un scatterplot
                     fig, ax = plt.subplots(figsize=(8, 6))
                     sns.scatterplot(x=data[column_x], y=data[column_y], ax=ax)
                     ax.set_title(f"Scatter Plot : {column_x} vs {column_y}")
@@ -140,24 +136,18 @@ def home(request):
                     scatterplot = base64.b64encode(buf.read()).decode("utf-8")
                     buf.close()
             elif action == "heatmap_2cols":
-                # Récupérer les colonnes sélectionnées
                 column_x = request.POST.get("column_x")
                 column_y = request.POST.get("column_y")
 
-                # Vérifier si les colonnes sont valides
                 if column_x and column_y and column_x in data.columns and column_y in data.columns:
-                    # Créer un sous-ensemble avec les deux colonnes sélectionnées
                     subset = data[[column_x, column_y]]
 
-                    # Calculer la matrice de corrélation
                     corr_matrix = subset.corr()
 
-                    # Générer la heatmap
                     fig, ax = plt.subplots(figsize=(6, 5))
                     sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", ax=ax)
                     ax.set_title(f"Heatmap : {column_x} vs {column_y}")
 
-                    # Sauvegarder l'image
                     buf = io.BytesIO()
                     plt.savefig(buf, format="png")
                     buf.seek(0)
@@ -168,10 +158,9 @@ def home(request):
                 selected_categorical = request.POST.get("selected_categorical")
                 if selected_categorical and selected_categorical in data.columns:
                     try:
-                    # Vérifier si la colonne est bien catégorique
                         if data[selected_categorical].dtype == 'object' or data[selected_categorical].dtype.name == 'category':
                             fig, ax = plt.subplots(figsize=(8, 6))
-                            sns.countplot(x=selected_categorical, data=data, ax=ax)  # Ajout de `data=data` au lieu de `x=data[selected_categorical]`
+                            sns.countplot(x=selected_categorical, data=data, ax=ax)  
                             ax.set_title(f"Countplot de {selected_categorical}")
                 
                             buf = io.BytesIO()
@@ -179,7 +168,7 @@ def home(request):
                             buf.seek(0)
                             countplot = base64.b64encode(buf.read()).decode("utf-8")
                             buf.close()
-                            plt.close(fig)  # Ferme la figure pour libérer la mémoire
+                            plt.close(fig)  
                         else:
                             error_message = f"La colonne '{selected_categorical}' n'est pas catégorique."
                     except Exception as e:
@@ -205,7 +194,6 @@ def home(request):
             elif action == "piechart":
                 selected_categorical = request.POST.get("selected_categorical")
                 if selected_categorical and selected_categorical in data.columns:
-                    # Générer un Pie Chart
                     category_counts = data[selected_categorical].value_counts()
                     fig, ax = plt.subplots(figsize=(8, 6))
                     ax.pie(category_counts, labels=category_counts.index, autopct='%1.1f%%', startangle=90)
@@ -220,7 +208,6 @@ def home(request):
                 selected_categorical = request.POST.get("selected_categorical")
                 selected_numeric = request.POST.get("selected_numeric")
                 if selected_categorical and selected_numeric and selected_categorical in data.columns and selected_numeric in data.columns:
-                    # Générer un violin plot
                     fig, ax = plt.subplots(figsize=(8, 6))
                     sns.violinplot(x=data[selected_categorical], y=data[selected_numeric], ax=ax)
                     ax.set_title(f"Violin Plot de {selected_numeric} par {selected_categorical}")
@@ -233,7 +220,6 @@ def home(request):
                     violinplot = None
 
 
-    # Préparer les données pour l'affichage
     if data is not None:
         data_preview = pd.concat([data.head(3), data.tail(3)]).reset_index().to_dict(orient="records")
         numeric_columns = data.select_dtypes(include=["number"]).columns.tolist()
@@ -256,19 +242,18 @@ def home(request):
         "heatmap": heatmap,
         "boxplot": boxplot,
         "scatterplot": scatterplot,
-        "countplot": countplot,  # On passe la variable countplot au template
-        "barplot": barplot,  # On passe la variable barplot au template
+        "countplot": countplot,  
+        "barplot": barplot,  
         "piechart": piechart,
-        "violinplot": violinplot,  # On passe la variable violinplot au template
-        "kdeplot": kdeplot,  # On passe la variable kdeplot au template
+        "violinplot": violinplot,  
+        "kdeplot": kdeplot,  
         "error_message": error_message,
-        "heatmap_2cols": heatmap_2cols,  # On passe la variable heatmap_2cols au template
+        "heatmap_2cols": heatmap_2cols, 
     })
 def probabilites_view(request):
-    # Variables pour les résultats
     result_bernoulli = None
     graph_bernoulli = None
-    prob_success = 0  # Probabilité de succès
+    prob_success = 0  
     result_binomial = None
     chart_binomial = None
     result_loterie = None
@@ -283,27 +268,25 @@ def probabilites_view(request):
     chart_uniforme = None
     result_exponentielle = None
     chart_exponentielle = None
-    moyenne = 3  # Durée de vie moyenne en heures
+    moyenne = 3  
     result_normale = None
     graph_normale = None
 
-    # Paramètres de la loi normale
     mean = 75
     std_dev = 7
     if request.method == "POST":
-        calculation_type = request.POST.get("calculation_type")  # Identifier le type de calcul demandé
+        calculation_type = request.POST.get("calculation_type") 
 
         try:
             if calculation_type == "bernoulli":
-                # Calcul pour Bernoulli
                 condition_type = request.POST.get("condition_type")
                 condition_value = request.POST.get("condition_value")
-                if condition_type == "equals":  # P(X = valeur)
+                if condition_type == "equals":  
                     value = int(condition_value)
                     prob_success = 1 / 6
                     result_bernoulli = f"P(X = {value}) = 1/6 ≈ {round(prob_success, 4)}"
                 elif condition_type == "greater":
-                    value = int(condition_value)  # Pas besoin de vérifier les plages, déjà validées
+                    value = int(condition_value) 
                     favorable = 6 - value
                     prob_success = favorable / 6
                     result_bernoulli = f"P(X > {value}) = {favorable}/6 ≈ {round(prob_success, 4)}"
@@ -313,28 +296,24 @@ def probabilites_view(request):
                     prob_success = favorable / 6
                     result_bernoulli = f"P(X < {value}) = {favorable}/6 ≈ {round(prob_success, 4)}"
                 
-                elif condition_type == "even":  # P(X est pair)
+                elif condition_type == "even":  
                     prob_success = 3 / 6
                     result_bernoulli = "P(X est pair) = 3/6 = 1/2 ≈ 0.5"
 
-                elif condition_type == "odd":  # P(X est impair)
+                elif condition_type == "odd":  
                     prob_success = 3 / 6
                     result_bernoulli = "P(X est impair) = 3/6 = 1/2 ≈ 0.5"
 
                 graph_bernoulli = generate_bernoulli_graph(prob_success)
 
             elif calculation_type == "binomial":
-                # Calcul pour Binomiale
-                n = int(request.POST.get("n"))  # Nombre de lancers
-                x = int(request.POST.get("x"))  # Nombre de succès souhaités
-                valeur = int(request.POST.get("valeur"))  # Valeur recherchée sur le dé
+                n = int(request.POST.get("n"))  
+                x = int(request.POST.get("x"))  
+                valeur = int(request.POST.get("valeur"))  
 
-                # Calculer la probabilité de succès pour la valeur choisie
-                p = 1 / 6  # Probabilité de succès pour une face spécifique sur un dé (1/6)
-                # Calculer la probabilité P(X = x)
+                p = 1 / 6  
                 prob = binom.pmf(x, n, p)
                 result_binomial = f"P= {prob:.4f}"
-                # Générer le graphique de la distribution binomiale
                 x_values = list(range(n + 1))
                 y_values = [binom.pmf(k, n, p) for k in x_values]
 
@@ -344,15 +323,13 @@ def probabilites_view(request):
 
                 plt.xlabel("Nombre de succès")
                 plt.ylabel("Probabilité")
-                plt.ylim(0, 1)  # Fixer l'axe Y de 0 à 1
-                plt.yticks([i / 10 for i in range(11)])  # Pas de 0.1
-                plt.xticks(range(0, n + 1, 1))  # Pas de 1, de 0 à n
+                plt.ylim(0, 1)  
+                plt.yticks([i / 10 for i in range(11)])  
+                plt.xticks(range(0, n + 1, 1))  
 
-                # Mettre en évidence la barre correspondant à X
                 plt.bar(x, binom.pmf(x, n, p), color="orange", edgecolor="black")
                 plt.text(x, binom.pmf(x, n, p), f"{prob:.4f}", ha='center', va='bottom')
 
-                # Convertir le graphique en image
                 buf = io.BytesIO()
                 plt.savefig(buf, format="png")
                 buf.seek(0)
@@ -361,19 +338,15 @@ def probabilites_view(request):
                 plt.close()
 
             elif calculation_type == "loterie":
-                # Calcul pour Loterie
-                n = int(request.POST.get("n"))  # Nombre total de tickets
-                selection = int(request.POST.get("selection"))  # Ticket sélectionné
+                n = int(request.POST.get("n"))  
+                selection = int(request.POST.get("selection")) 
 
-                # Validation serveur : Vérifier si la sélection est dans la plage correcte
                 if selection < 1 or selection > n:
                     raise ValueError(f"⚠️ Ticket sélectionné ({selection}) en dehors de l'intervalle [1, {n}].")
 
-                # Probabilité uniforme
                 prob = 1 / n
                 result_loterie = f"P(Ticket {selection}) = 1/{n} = {prob:.4f}"
 
-                # Générer un graphique
                 labels = [f"Ticket {i}" for i in range(1, n + 1)]
                 probabilities = [1 / n] * n
 
@@ -387,44 +360,36 @@ def probabilites_view(request):
                 plt.ylabel("Probabilité")
                 plt.ylim(0, 1.1)
 
-                # Ajouter les probabilités sur les barres
                 for i, bar in enumerate(bars):
                     plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02,
                             f"{probabilities[i]:.4f}", ha='center')
 
-                # Sauvegarder l'image
                 buf = io.BytesIO()
                 plt.savefig(buf, format="png")
                 buf.seek(0)
                 chart_loterie = base64.b64encode(buf.read()).decode("utf-8")
                 buf.close()
                 plt.close()
-            # Loi de Poisson
             elif calculation_type == "poisson":
-                # Récupérer les entrées utilisateur
                 x = int(request.POST.get("x"))
                 heures = int(request.POST.get("heures"))
 
-                # Calculer la moyenne pour la durée choisie
                 moyenne_totale = moyenne_par_heure * heures
 
-                # Probabilité exacte
                 prob_exacte = poisson.pmf(x, moyenne_totale)
                 result_poisson = f"P(X = {x}) = {prob_exacte:.4f}"
 
-                # Graphe
                 valeurs_x = list(range(0, x + 10))
                 y_values = [poisson.pmf(k, moyenne_totale) for k in valeurs_x]
 
                 plt.figure(figsize=(8, 5))
                 plt.bar(valeurs_x, y_values, color="skyblue", edgecolor="black")
-                plt.bar(x, poisson.pmf(x, moyenne_totale), color="orange", edgecolor="black")  # Mettre en évidence X
+                plt.bar(x, poisson.pmf(x, moyenne_totale), color="orange", edgecolor="black") 
                 plt.title(f"Loi de Poisson\n {x} appels en {heures} heures, P={prob_exacte:.4f}")
                 plt.xlabel("Nombre d'événements")
                 plt.ylabel("Probabilité")
                 plt.xticks(range(0, x + 10))
                 plt.yticks([i / 10 for i in range(11)])
-                # Convertir le graphique en image
                 buf = io.BytesIO()
                 plt.savefig(buf, format="png")
                 buf.seek(0)
@@ -433,37 +398,32 @@ def probabilites_view(request):
                 plt.close()
 
             elif calculation_type == "uniforme_continue":
-                x = float(request.POST.get("x"))  # Valeur sélectionnée
-                condition = request.POST.get("condition")  # Type de condition : =, >, <
-                # Vérifier si x est dans l'intervalle valide [a, b]
+                x = float(request.POST.get("x"))  
+                condition = request.POST.get("condition")  
                 if x < a or x > b:
                     raise ValueError(f"La valeur {x} est en dehors de l'intervalle [{a}, {b}].")
 
-                # Densité uniforme
                 f_x = 1 / (b - a)
 
-                # Calculer les probabilités
-                if condition == "=":  # Probabilité exacte
-                    prob = 0  # Pour une distribution continue, P(X = x) = 0
+                if condition == "=":  
+                    prob = 0  
                     result_uniforme = f"P(X = {x}) = {prob:.4f}"
 
-                elif condition == ">":  # Probabilité supérieure
+                elif condition == ">":  
                     prob = (b - x) / (b - a)
                     result_uniforme = f"P(X > {x}) = {prob:.4f}"
 
-                elif condition == "<":  # Probabilité inférieure
+                elif condition == "<":  
                     prob = (x - a) / (b - a)
                     result_uniforme = f"P(X < {x}) = {prob:.4f}"
 
-                # Générer le graphique
                 valeurs_x = np.linspace(a - 1, b + 1, 100)
                 y = [f_x if a <= v <= b else 0 for v in valeurs_x]
 
                 plt.figure(figsize=(8, 5))
-                plt.plot(valeurs_x, y, color='blue')  # Courbe
+                plt.plot(valeurs_x, y, color='blue')  
                 plt.fill_between(valeurs_x, y, 0, where=((valeurs_x >= a) & (valeurs_x <= b)), color='lightblue', alpha=0.5)
 
-                # Mettre en évidence la condition choisie
                 if condition == "=":
                     plt.axvline(x, color='red', linestyle='--', label=f"x = {x}")
                 elif condition == ">":
@@ -477,7 +437,6 @@ def probabilites_view(request):
                 plt.legend()
                 plt.grid(True)
 
-                # Sauvegarder l'image
                 buf = io.BytesIO()
                 plt.savefig(buf, format="png")
                 buf.seek(0)
@@ -486,11 +445,9 @@ def probabilites_view(request):
                 plt.close()
 
             elif calculation_type == "exponentielle":
-                # Récupérer les entrées utilisateur
                 x = float(request.POST.get("x"))
                 condition = request.POST.get("condition")
 
-                # Paramètre lambda = 1/moyenne
                 lambd = 1 / moyenne
 
                 if condition == "greater":
@@ -501,7 +458,6 @@ def probabilites_view(request):
                     result = expon.cdf(x, scale=1/lambd)
                     result_exponentielle = f"P(X < {x}) = {result:.4f}"
 
-                # Générer le graphique
                 valeurs_x = np.linspace(0, x + 10, 100)
                 y_values = expon.pdf(valeurs_x, scale=1/lambd)
 
@@ -515,7 +471,6 @@ def probabilites_view(request):
                 plt.ylabel("Densité de probabilité")
                 plt.legend()
 
-                # Convertir le graphique en image
                 buf = io.BytesIO()
                 plt.savefig(buf, format="png")
                 buf.seek(0)
@@ -525,7 +480,6 @@ def probabilites_view(request):
             elif calculation_type == "normale":
                 interval = request.POST.get('interval')
 
-                # Calcul des probabilités en fonction de l'intervalle sélectionné
                 if interval == '68_82':
                     prob = norm.cdf(82, mean, std_dev) - norm.cdf(68, mean, std_dev)
                 elif interval == '61_89':
@@ -539,10 +493,8 @@ def probabilites_view(request):
                 else:
                     prob = 0
 
-                # Résultat en pourcentage
                 result_normale = round(prob * 100, 3)
 
-                # Générer le graphique
                 x = np.linspace(mean - 4 * std_dev, mean + 4 * std_dev, 1000)
                 y = norm.pdf(x, mean, std_dev)
 
@@ -552,7 +504,6 @@ def probabilites_view(request):
                 plt.xlabel('Valeurs')
                 plt.ylabel('Densité de probabilité')
 
-                # Mettre en évidence l'intervalle sélectionné
                 if interval == '68_82':
                     plt.fill_between(x, y, where=(x >= 68) & (x <= 82), color='skyblue', alpha=0.5)
                 elif interval == '61_89':
@@ -566,7 +517,6 @@ def probabilites_view(request):
 
                 plt.legend()
 
-                # Convertir le graphique en image
                 buf = io.BytesIO()
                 plt.savefig(buf, format='png')
                 buf.seek(0)
@@ -575,7 +525,6 @@ def probabilites_view(request):
                 plt.close()
 
         except Exception as e:
-            # Gestion des erreurs
             if calculation_type == "bernoulli":
                 result_bernoulli = f"⚠️ Erreur : {str(e)}"
             elif calculation_type == "binomial":
@@ -632,22 +581,18 @@ def generate_bernoulli_graph(prob_success):
     outcomes = ["Échec", "Succès"]
     probabilities = [1 - prob_success, prob_success]
 
-    # Création du graphe
     fig, ax = plt.subplots(figsize=(6, 4))
     bars = ax.bar(outcomes, probabilities, color=["red", "green"], edgecolor="black")
 
-    # Affichage des probabilités sur chaque barre
     ax.text(0, probabilities[0] + 0.02, f"P(Échec) = {round(probabilities[0], 4)}", ha='center')
     ax.text(1, probabilities[1] + 0.02, f"P(Succès) = {round(probabilities[1], 4)}", ha='center')
 
-    # Personnalisation des axes
     ax.set_title(f"Loi de Bernoulli (p = {round(prob_success, 4)})")
     ax.set_xlabel("Résultat")
     ax.set_ylabel("Probabilité")
-    ax.set_ylim(0, 1.1)  # Fixer l'axe Y entre 0 et 1
-    ax.set_yticks([i / 10 for i in range(11)])  # Pas de 0.1
+    ax.set_ylim(0, 1.1)  
+    ax.set_yticks([i / 10 for i in range(11)])  
 
-    # Sauvegarder dans un buffer
     buf = io.BytesIO()
     plt.savefig(buf, format="png")
     buf.seek(0)

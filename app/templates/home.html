@@ -17,7 +17,7 @@
         }
 
         body {
-            padding-top: 70px; /* Pour ne pas cacher le contenu sous la navbar */
+            padding-top: 70px;
         }
 
         section {
@@ -47,7 +47,6 @@
         </div>
     </nav>
     <div class="container mt-5">
-        <!-- 🚀 Section Importation -->
         <div id="import-section" class="container mt-5 py-5">
             <form method="POST" enctype="multipart/form-data" class="mb-4">
                 {% csrf_token %}
@@ -65,7 +64,6 @@
             {% endif %}
         </div>
 
-        <!-- 🚀 Aperçu des Données -->
         <div id="preview-section" class="container mt-1 py-5">
             {% if data_preview %}
             <h2 class="text-success">📄 Aperçu des données</h2>
@@ -93,7 +91,6 @@
             </div>
             {% endif %}
         </div>
-        <!-- Section pour les statistiques -->
         {% if numeric_columns %}
         <div id="statistics-section" class="container mt-1">
             <h2 class="text-success">📊 Calcul des Statistiques</h2>
@@ -129,7 +126,6 @@
         </div>
         {% endif %}
 
-        <!-- Section pour la visualisation -->
         {% if data_preview %}
         <div id="visualization-section"  class="container mt-4">
             <h2 class="text-success">📈 Visualisation</h2>
@@ -151,7 +147,6 @@
             </form>
         </div>
 
-        <!-- Visualisations -->
         {% if histogram %}
         <div class="container mt-4">
             <h4 class="text-success">Histogramme</h4>
@@ -173,13 +168,11 @@
         {% endif %}
 
 
-        <!-- Formulaire pour Scatterplot et Heatmap -->
 <div class="container mt-4">
     <h4 class="text-primary">Visualisations relationnelles</h4>
     <form method="post">
         {% csrf_token %}
         <div class="row mb-3">
-            <!-- Colonne X -->
             <div class="col-md-6">
                 <label for="column_x" class="form-label">Colonne X :</label>
                 <select name="column_x" id="column_x" class="form-select">
@@ -188,7 +181,6 @@
                     {% endfor %}
                 </select>
             </div>
-            <!-- Colonne Y -->
             <div class="col-md-6">
                 <label for="column_y" class="form-label">Colonne Y :</label>
                 <select name="column_y" id="column_y" class="form-select">
@@ -198,7 +190,6 @@
                 </select>
             </div>
         </div>
-        <!-- Boutons -->
         
             <button type="submit" name="action" value="scatterplot" class="btn btn-primary">Afficher Scatterplot</button>
             <button type="submit" name="action" value="heatmap_2cols" class="btn btn-danger">Afficher Heatmap</button>
@@ -206,7 +197,6 @@
     </form>
 </div>
 <div class="row mt-4">
-    <!-- Scatterplot -->
     {% if scatterplot %}
     <div class="col-md-6">
         <h4 class="text-success">Scatterplot</h4>
@@ -222,7 +212,6 @@
 
 </div>
 
-        <!-- Formulaire pour Countplot -->
         {% if data_preview %}
         <div class="container mt-4">
             <h4 class="text-primary">Visualisations catégoriques</h4>
@@ -255,7 +244,6 @@
             <img src="data:image/png;base64,{{ piechart }}" class="img-fluid" alt="Pie Chart">
         </div>
         {% endif %}
-        <!-- Formulaire pour Barplot -->
         {% if data_preview %}
         <div class="container mt-4">
             <h4 class="text-primary">Visualisations comparatives</h4>
